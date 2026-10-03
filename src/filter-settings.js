@@ -1,0 +1,11 @@
+/* PHOTOBENCH creative filter settings. GPL-3.0-only. */
+const creativeFilters=[
+ {id:'halation',name:'Halation',hint:'Warm light spilling around bright edges.',amount:[0,100],controls:[['halationRadius','Spread %',.2,4,.1,1.2],['halationThreshold','Highlight threshold',20,95,1,65],['halationWarmth','Red warmth',0,100,1,65]]},
+ {id:'grunge',name:'Grunge',hint:'Layered, weathered texture with stains, dust, and scratches.',amount:[0,100],controls:[['grungeScale','Texture size',1,100,1,45],['grungeRoughness','Dust & scratches',0,100,1,40],['grungeSeed','Texture seed',1,9999,1,37]]},
+ {id:'film',name:'Film',hint:'A film-inspired palette, soft tonal roll-off, faded blacks, and grain.',amount:[0,100],controls:[['filmFade','Faded blacks',0,100,1,20],['filmGrain','Film grain',0,100,1,25],['filmGrainSize','Grain size',1,100,1,25]]},
+ {id:'dehaze',name:'Dehaze',hint:'Positive values reduce haze; negative values add atmospheric haze.',amount:[-100,100],controls:[['dehazeRadius','Atmosphere scale',1,100,1,35]]},
+ {id:'aberration',name:'Chromatic aberration',hint:'Separate red and blue at edges. Negative strength reverses the fringe.',amount:[-100,100],controls:[['aberrationCenterX','Optical center X %',0,100,1,50],['aberrationCenterY','Optical center Y %',0,100,1,50],['aberrationAngle','Linear direction °',0,180,1,0]]}
+];
+const filmProfiles=[['warm','Warm negative'],['cool','Cool slide'],['silver','Silver monochrome'],['faded','Faded instant']];
+function creativeDefaults(){const out={filmProfile:'warm',aberrationMode:'radial'};for(const f of creativeFilters){out[f.id]=0;out[f.id+'Enabled']=true;for(const [k,,,,,v]of f.controls)out[k]=v;}return out;}
+function normalizeCreative(raw,out){const d=creativeDefaults();for(const f of creativeFilters){for(const [k,min,max]of [[f.id,...f.amount],...f.controls.map(([k,,lo,hi])=>[k,lo,hi])])out[k]=typeof raw?.[k]==='number'&&Number.isFinite(raw[k])?Math.min(max,Math.max(min,raw[k])):d[k];out[f.id+'Enabled']=raw?.[f.id+'Enabled']!==false;}out.grungeSeed=Math.round(out.grungeSeed);out.filmProfile=filmProfiles.some(([k])=>k===raw?.filmProfile)?raw.filmProfile:d.filmProfile;out.aberrationMode=raw?.aberrationMode==='linear'?'linear':'radial';return out;}
