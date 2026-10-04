@@ -20,4 +20,4 @@ No Google or Snapseed source code, logos, icons, filter assets, or proprietary a
 
 ## Dependencies
 
-No third-party JavaScript or CSS is needed at runtime. Optional development tests use Playwright (Apache-2.0). Python's standard library is used by the optional bundler. System fonts and browser platform APIs are used by the editor.
+No third-party JavaScript or CSS is needed at runtime. Optional development tests use Playwright (Apache-2.0) and `@napi-rs/canvas` for native Canvas integration checks. These packages are not bundled. Python's standard library is used by the optional bundler. System fonts and browser platform APIs are used by the editor.

@@ -25,7 +25,7 @@ function extendWorkspacePanel(){
    field.insertAdjacentHTML('beforeend',`<label class="inline-toggle"><input id="pressureEnabled" type="checkbox" ${pressureEnabled?'checked':''}>Pen pressure controls radius</label><button id="paintMode" class="full" aria-pressed="${brushAction==='paint'}">Paint a new adjustment</button>`+selectedStrokePanel('brushes'));
   }
  }
- if(tab==='retouch')field.insertAdjacentHTML('beforeend',selectedStrokePanel('clones'));
+ if(tab==='retouch'&&retouchMode==='clone')field.insertAdjacentHTML('beforeend',selectedStrokePanel('clones'));
  if(tab==='crop'){
   field.querySelector('.hint').textContent='Drag a corner to resize, drag inside to move, or drag outside to draw a new crop. Apply when ready.';
   $('cropRatio').closest('label').insertAdjacentHTML('afterend',`<label class="inline-toggle"><input id="cropSnap" type="checkbox" ${cropSnap?'checked':''}>Snap edges to thirds and center</label>`);

@@ -1,69 +1,43 @@
 {
-  "release": "1.3.0",
-  "checks_passed": 70,
+  "release": "1.4.0",
+  "verified_at": "2026-10-04",
+  "status": "algorithm-and-native-canvas-verified; browser-acceptance-not-run",
+  "checks_passed": 33,
   "environment": {
-    "browser": "Chromium 134.0.6998.35",
-    "platform": "Linux",
-    "automation": "Playwright 1.62.1"
+    "runtime": "v24.19.0",
+    "canvas": "@napi-rs/canvas",
+    "worker": "Node worker_threads running actual embedded inpaint code",
+    "browser": null
   },
-  "index_sha256": "afa68a7bf5d22a80dbe6837afc078dcfb99ee7defc6849eccd917c46d219e0f2",
+  "index_sha256": "a8c8ccc48f28db0a7a50f58c0e01520c7058711be9e75fbd30bd68fc37ff5d23",
   "groups": {
-    "Core browser workflows": [
-      "Cold start and sample import",
-      "Exposure changes pixels, undo restores and redo reapplies",
-      "Before/after comparison and keyboard spacebar",
-      "Browser autosave restores the exact settings",
-      "Curves and selective point controls",
-      "Painted exposure and clone strokes",
-      "Crop, rotate, straighten, and editable frame",
-      "Full-size PNG export and project JSON round trip",
-      "Invalid project preserves existing image and rejects external URLs",
-      "Reusable look, double exposure, and WebP export",
-      "Light and high-contrast themes render; controls collapse",
-      "Offline reload restores the editor and project",
-      "Phone and tablet layout avoid horizontal overflow",
-      "Fresh start removes sample, edits and autosave",
-      "Standalone HTML opens and edits without any network",
-      "No uncaught browser errors"
+    "Object removal pixel quality": [
+      "Object disappears exactly on a flat wall",
+      "Smooth gradient is reconstructed without retaining the painted object",
+      "A straight boundary continues through the removed object",
+      "Repeated horizontal texture retains pattern and contrast",
+      "Unpainted pixels and every alpha byte are preserved exactly",
+      "An edge-touching object and disconnected objects can be filled",
+      "No masked pixel is ever selected as a source donor; repeated fills are deterministic",
+      "Empty masks and masks without usable surroundings fail with actionable errors"
     ],
-    "Pixel and export boundaries": [
-      "Neutral pixel renderer preserves exact RGB and alpha",
-      "All 13 tone/detail controls and four main effects change actual pixels",
-      "Final border stays aligned at all four rotations and with straighten",
-      "Empty numeric entry resets consistently in state and slider",
-      "Print output contains the photograph and hides editor chrome",
-      "JPEG export flattens transparency onto white",
-      "Oversized image is reduced with explicit notice"
+    "Magic Eraser Canvas and worker integration": [
+      "Actual brush handlers create recoverable add/subtract masks",
+      "Real worker produces a preview while committed state and source remain unchanged",
+      "Keep commits one reversible removal and retains original source",
+      "Project and snapshot assets round-trip with exact removal pixels",
+      "IndexedDB save payload retains patches and painted mask metadata",
+      "Snapshot-only removal assets survive current-session reset",
+      "Bypass and geometry preserve the non-destructive removal model",
+      "Refine last removal restores its mask; discard leaves the mask available",
+      "Retry computes another proposal without accumulating kept removals",
+      "Cancellation stops work and preserves both the photo and mask",
+      "Legacy projects get an empty eraser; malformed patch references reject safely",
+      "Native-resolution removal retains PNG alpha outside and inside the mask",
+      "Reduced analysis reconstructs a native-resolution patch without resizing the photo",
+      "Photo texture example renders through the same full application pipeline"
     ],
-    "v1.1 and v1.2 workflows": [
-      "Schema 1 migration preserves source, edits, and all five curve anchors",
-      "Brush strokes can be selected, resized, changed, bypassed, and erased",
-      "Per-stroke masks and bypass survive JSON normalization",
-      "Clone strokes can be individually edited and removed",
-      "Crop handles resize and interior dragging moves the selection",
-      "Projective geometry changes pixels and round-trips source coordinates",
-      "Canvas expansion adds exact dimensions and explicit fill",
-      "Nine-anchor smooth curves and HSL alter the image",
-      "Recipe export contains no images and reapplies the selected settings",
-      "Edit inspector bypasses groups without deleting settings",
-      "Named snapshots compare and restore an earlier complete edit",
-      "Current project round trip retains snapshots, masks, and geometry",
-      "Full-detail view, zoom, pan, and remembered inspector width",
-      "Expanded PNG export has exact size and fill color",
-      "Responsive advanced tools remain within a phone viewport",
-      "No uncaught browser errors"
-    ],
-    "Recovery, geometry fills, and touch": [
-      "Snapshot retains its own second image after the current overlay is replaced",
-      "Malformed recipe leaves existing edits untouched",
-      "Pressure samples vary mask radius while mouse radius remains stable",
-      "Undoing the selected stroke clears eraser selection and allows a new stroke",
-      "Transparent, solid, edge, and mirror expansion modes produce their stated fill",
-      "Expanded render plan respects the 32 MP and 8192-pixel limits",
-      "Two-finger browser touch gesture zooms the photo",
-      "No uncaught errors during recovery and touch checks"
-    ],
-    "Creative filter pixel invariants": [
+    "Creative filter pixel regression": [
       "All filters at zero are byte-identical; bypass retains neutral output",
       "Halation makes a warm halo around a highlight, without lifting remote shadows",
       "Halation threshold and spread change the visible halo",
@@ -75,20 +49,30 @@
       "Radial aberration leaves its optical center fixed",
       "Combined filters preserve every alpha value, including transparent edges",
       "Tiny images and all-transparent images remain finite and stable"
-    ],
-    "Creative filter browser workflows": [
-      "Five named filters are available in Easy mode with labeled keyboard controls",
-      "Each filter changes actual preview pixels; bypass and reset recover original pixels",
-      "Filter amount edits are undoable and redoable",
-      "Texture seed, film palettes, halation tuning, and aberration direction are functional",
-      "Combined filters survive autosave and reload with identical pixels",
-      "New project JSON keeps filter settings and named snapshots",
-      "Recipe round trip and group bypass preserve all five filters",
-      "Saved personal looks retain creative filters after a reload",
-      "Full-detail preview is pixel-identical to a full-size PNG export",
-      "Old project and recipe schemas gain neutral filter defaults; invalid parameters are sanitized",
-      "Filter panel fits desktop and phone layouts in every theme",
-      "No uncaught browser errors"
     ]
+  },
+  "static_checks": [
+    "All source JavaScript, service worker, and test scripts parse",
+    "All embedded script blocks parse",
+    "Static HTML IDs are unique",
+    "Bundler placeholders replaced and worker/cancel nodes present"
+  ],
+  "browser_verification": {
+    "status": "not_run",
+    "reason": "No local browser executable; browser download endpoint unavailable; cloud browser blocked local test URL.",
+    "included_unexecuted_suites": [
+      "browser.cjs",
+      "edgechecks.cjs",
+      "v12.cjs",
+      "recovery-v12.cjs",
+      "v13.cjs",
+      "v14.cjs"
+    ]
+  },
+  "historical_baseline": {
+    "release": "1.3.0",
+    "checks_passed": 70,
+    "browser": "Chromium 134.0.6998.35",
+    "note": "Historical results only; not a verification of this bundle."
   }
 }

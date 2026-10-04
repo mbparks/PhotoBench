@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+const root=path.resolve(__dirname,'..'),ctx={console};vm.createContext(ctx);vm.runInContext(fs.readFileSync(path.join(root,'src/inpaint.js'),'utf8'),ctx);
+const results=[],W=192,H=144;
+function fixture(bg,region=(x,y)=>x>=79&&x<111&&y>=54&&y<94){const truth=new Uint8ClampedArray(W*H*4),input=new Uint8ClampedArray(W*H*4),mask=new Uint8Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=(y*W+x)*4;truth.set([...bg(x,y),255],i);input.set(truth.slice(i,i+4),i);if(region(x,y)){mask[y*W+x]=1;input.set([255,0,170,255],i);}}return{truth,input,mask};}
+function fill(f,options={}){return ctx.inpaintObject(f.input,f.mask,W,H,{patch:5,seed:42,...options});}
+function error(f,result){let e=0,n=0;for(let i=0;i<f.mask.length;i++)if(f.mask[i])for(let c=0;c<3;c++){e+=Math.abs(result.pixels[i*4+c]-f.truth[i*4+c]);n++;}return e/n;}
+function test(name,fn){fn();results.push(name);console.log('PASS',name);}
+test('Object disappears exactly on a flat wall',()=>{const f=fixture(()=>[93,146,181]),r=fill(f);assert.equal(error(f,r),0);});
+test('Smooth gradient is reconstructed without retaining the painted object',()=>{const f=fixture((x,y)=>[70+x*.3,95+x*.3,120+x*.3]),r=fill(f);assert(error(f,r)<5,'Mean gradient error '+error(f,r));});
+test('A straight boundary continues through the removed object',()=>{const f=fixture((x,y)=>y<72?[80,130,175]:[145,105,65]),r=fill(f);assert(error(f,r)<8,'Mean edge error '+error(f,r));});
+test('Repeated horizontal texture retains pattern and contrast',()=>{const f=fixture((x,y)=>{const v=Math.floor(y/6)%2?160:90;return[v,v+15,v+30];}),r=fill(f);assert(error(f,r)<12,'Mean stripe error '+error(f,r));const values=new Set();for(let i=0;i<f.mask.length;i++)if(f.mask[i])values.add(r.pixels[i*4]);assert(values.size>=2);});
+test('Unpainted pixels and every alpha byte are preserved exactly',()=>{const f=fixture((x,y)=>[x%255,y%255,(x+y)%255]);for(let i=0;i<20;i++)f.input[i*4+3]=0;const r=fill(f);for(let i=0;i<f.mask.length;i++){assert.equal(r.pixels[i*4+3],f.input[i*4+3]);if(!f.mask[i])for(let c=0;c<4;c++)assert.equal(r.pixels[i*4+c],f.input[i*4+c]);}});
+test('An edge-touching object and disconnected objects can be filled',()=>{for(const region of [(x,y)=>x<19&&y>50&&y<90,(x,y)=>(x>40&&x<59&&y>30&&y<50)||(x>120&&x<140&&y>90&&y<110)]){const f=fixture(()=>[71,111,151],region),r=fill(f);assert.equal(error(f,r),0);}});
+test('No masked pixel is ever selected as a source donor; repeated fills are deterministic',()=>{const f=fixture((x,y)=>[x%43*3,y%37*3,111]),a=fill(f),b=fill(f);assert.deepEqual(Array.from(a.pixels),Array.from(b.pixels));for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(f.mask[i]){const j=(y+a.dy[i])*W+x+a.dx[i];assert.equal(f.mask[j],0);}}});
+test('Empty masks and masks without usable surroundings fail with actionable errors',()=>{const f=fixture(()=>[100,100,100]);assert.throws(()=>ctx.inpaintObject(f.input,new Uint8Array(W*H),W,H),/Paint over/);assert.throws(()=>ctx.inpaintObject(f.input,new Uint8Array(W*H).fill(1),W,H),/unpainted surroundings/);});
+fs.mkdirSync(path.join(root,'.test-artifacts'),{recursive:true});fs.writeFileSync(path.join(root,'.test-artifacts/inpaint-results.json'),JSON.stringify({date:new Date().toISOString(),passed:results},null,2));

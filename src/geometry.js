@@ -1,5 +1,5 @@
 /* Projective geometry, canvas expansion, and inverse coordinate mapping. */
-const editGroups=['adjust','curves','hsl','geometry','points','brushes','clones','effects','text','frame','blend'];
+const editGroups=['adjust','curves','hsl','geometry','points','brushes','clones','eraser','effects','text','frame','blend'];
 function effectiveSettings(s){const out=copy(s),d=defaults();for(const k of editGroups)if(s.enabled?.[k]===false)out[k]=copy(d[k]);return out;}
 function projection(g){const ph=g.perspectiveH/100*.45,pv=g.perspectiveV/100*.45;
  const raw=(u,v)=>{const den=1+ph*u+pv*v;return[u/den,v/den];};

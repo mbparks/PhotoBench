@@ -1,4 +1,4 @@
-/* PHOTOBENCH v1.3.0 — GPL-3.0-only. Pure, deterministic pixel renderer. */
+/* PHOTOBENCH v1.4.0 — GPL-3.0-only. Pure, deterministic pixel renderer. */
 function clamp(x,lo=0,hi=255){return Math.max(lo,Math.min(hi,x));}
 function blur(src,w,h,r){
   r=Math.max(1,Math.round(r));const tmp=new Float32Array(src.length),out=new Uint8ClampedArray(src.length),n=2*r+1;

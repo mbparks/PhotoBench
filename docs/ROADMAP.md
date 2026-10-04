@@ -1,6 +1,6 @@
 # PHOTOBENCH development roadmap
 
-Current release: **v1.3.0**. The requested creative filters take priority over the previous batch-work proposal.
+Current release: **v1.4.0**. The requested Magic Eraser takes priority over batch workflows. Browser acceptance checks for this update remain to be run in a browser-equipped environment.
 
 ## v1.0 — Complete foundation
 
@@ -41,7 +41,17 @@ Full detail uses a full working-resolution render. Adaptive high-resolution tile
 - Individual bypass/reset, project/recipe/look persistence, and full-resolution export.
 - Schema-1/2 project migration; schema-3 projects and schema-2 recipes guard against older editors dropping filters.
 
-## v1.4 candidate — Repeated work
+## v1.4 — Implemented: Magic Eraser
+
+- Paint/subtract an object-removal mask in Easy or Advanced mode.
+- Local exemplar-based reconstruction from unpainted surroundings.
+- Preview, keep, retry, refine, cancel, undo/redo, and original comparison.
+- Native-resolution patches; original source retained.
+- Autosaved masks, project/snapshot patch retention, and group bypass.
+- Schema-4 projects with import of previous project versions.
+- Pixel/worker/Canvas integration checks passed; browser UI acceptance remains unverified in this session.
+
+## v1.5 candidate — Repeated work
 
 - Batch apply a recipe and review individual results.
 - ZIP export, contact sheets, and reusable output-size presets.
@@ -52,7 +62,7 @@ Full detail uses a full working-resolution render. Adaptive high-resolution tile
 
 - Bundled local RAW and HEIC decoding.
 - High-bit-depth processing and calibrated color-profile handling.
-- Local content-aware healing and automatic subject/background masks.
+- Semantic/generative fills for complex hidden structures; automatic subject/background masks.
 - GPU acceleration with a tested CPU fallback.
 
 Prioritize editing correctness, useful control, recoverability, and memory use over accumulating filters.

@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.0 — 2026-10-04
+
+- Added Retouch → Magic Eraser in both modes: paint/subtract a mask, reconstruct from surrounding pixels, preview, retry, keep, or cancel.
+- Added native-resolution patch reconstruction, preserved alpha and original source, undoable kept removals, and refinement of the latest removal.
+- Added schema-4 projects with persistent masks and PNG patch assets retained by current edits and snapshots. Earlier project versions remain importable.
+- Preserved existing Clone brush as an explicit Retouch mode.
+- Added deterministic inpainting, native Canvas/worker integration, and browser acceptance test scripts. Browser scripts could not be executed in this session; see TEST-REPORT.
+
 ## v1.3.0 — 2026-10-03
 
 - Added Halation, Grunge, Film, Dehaze, and Chromatic aberration in Finish → Creative filters, visible in Easy and Advanced.

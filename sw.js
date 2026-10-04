@@ -1,6 +1,6 @@
-/* PHOTOBENCH v1.3.0. Only this editor's static shell is cached. */
+/* PHOTOBENCH v1.4.0. Only this editor's static shell is cached. */
 const PREFIX='photobench:'+self.registration.scope;
-const CACHE=PREFIX+'v1.3.0';
+const CACHE=PREFIX+'v1.4.0';
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['./','./index.html'])).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(PREFIX)&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

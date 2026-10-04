@@ -1,4 +1,4 @@
-# PHOTOBENCH v1.3.0
+# PHOTOBENCH v1.4.0
 
 A self-hosted, local-first photo editor from Green Shoe Garage.
 
@@ -36,6 +36,7 @@ Do not upload your photos or saved project JSON files to your public web folder.
 - Eight overlapping HSL color ranges with separate hue, saturation, and lightness controls.
 - Up to twelve soft radial control points with exposure, saturation, and warmth.
 - Painted exposure, saturation, and warmth adjustments; up to 60 strokes per project. Select, edit, bypass, or delete individual strokes; show their masks and erase portions. Optional pen pressure controls radius.
+- Magic Eraser: paint unwanted objects, preview an automatic surrounding-pixel fill, retry/refine, keep, or undo.
 - Soft manual clone retouching; up to 60 strokes. Select individual strokes to change size, opacity, or sampling offset; bypass or delete them.
 - Halation, grunge, film palettes, dehaze, and chromatic aberration with individual strength, tuning, bypass, and reset.
 - Vignette, grain, glow, radial lens blur, text, and inset frames.
@@ -66,7 +67,7 @@ Control points and brush strokes are stored in normalized source-image coordinat
 
 Brush strokes apply the chosen adjustment with a soft edge. A stroke uses its strongest brush coverage at each pixel, avoiding dark joins. Separate strokes accumulate. Undo removes a stroke; Erase All removes all adjustment brush strokes.
 
-Clone retouching samples the original image, before color edits. Choose a clean source, then paint over a small distraction. Each stroke uses an offset from its first point to the selected source. Re-pick the source for another area. It is **manual cloning, not content-aware healing**. At source-image edges, sample patches may contain transparent pixels.
+Clone retouching samples the source after any kept Magic Eraser repairs and before color edits. Choose a clean source, then paint over a small distraction. Each stroke uses an offset from its first point to the selected source. Re-pick the source for another area. The Clone brush copies the area you choose; Magic Eraser chooses surrounding patches automatically. At source-image edges, sample patches may contain transparent pixels.
 
 Text and borders are added after geometry and are aligned to the final frame. The frame is inset and covers the photo edge; it does not expand the image. Text supports up to five lines and three built-in font families.
 
@@ -74,7 +75,7 @@ Text and borders are added after geometry and are aligned to the final frame. Th
 
 One active project is saved in IndexedDB in this browser. The status reads Unsaved, Saving, Saved, or an explicit storage error. Saved looks, theme, and mode use localStorage. Save a project JSON for important work: browser eviction, private browsing, clearing site data, changing origins, or changing devices can remove local recovery.
 
-Project JSON schema 3 includes the working source image, adjustments, spatial edits, snapshots, and every second image referenced by the current edit or a snapshot. Schema-1 and schema-2 projects from v1.0–v1.2 import automatically with the new filters off. Five-anchor curves are expanded to nine anchors with the original linear shape retained. New schema-3 projects require v1.3 or later so older editors cannot silently drop creative-filter settings; keep older backups if needed. Import validates the schema, image type, ranges, mask sizes, asset identifiers, and working dimensions. Invalid imports preserve the existing session. No network URLs or imported scripts are accepted.
+Project JSON schema 4 includes the working source image, adjustments, spatial edits, Magic Eraser patches, snapshots, and every second image referenced by the current edit or a snapshot. Schema-1, schema-2, and schema-3 projects from v1.0–v1.3 import automatically; older projects start with no removal patches. Five-anchor curves are expanded to nine anchors with the original linear shape retained. New schema-4 projects require v1.4 or later so older editors cannot silently drop removal patches; keep older backups if needed. Import validates the schema, image type, ranges, mask sizes, asset identifiers, and working dimensions. Invalid imports preserve the existing session. No network URLs or imported scripts are accepted.
 
 Fresh Start clears the active project and its autosave after confirmation. It keeps personal looks and interface preferences. Reset All Edits is undoable. Personal looks can be cleared separately from the Looks panel.
 
@@ -105,7 +106,7 @@ If you enforce Content Security Policy, the standalone bundle needs inline scrip
 
 Controls have labels, focus outlines, keyboard input, native dialogs, and status announcements. Editing can be performed with numeric fields and sliders; spatial brush/clone painting requires a pointing device. Control points and crop have keyboard-accessible numeric alternatives. On mobile, editing controls appear beneath the photo. Preview zoom uses ordinary scrolling to inspect enlarged images.
 
-Tested in Chromium 134 on Linux at desktop, tablet, and phone viewport sizes. Chrome/Edge/Firefox/Safari are intended targets, but physical iOS/Android devices and Safari were not available for this release's verification. Use a current browser with Canvas, Web Workers, IndexedDB, and native dialog support. Service-worker offline reload requires a secure context.
+The v1.3 baseline was tested in Chromium 134 on Linux at desktop, tablet, and phone sizes. For v1.4, the new algorithms and app integration were verified with native Canvas and real worker threads. Browser UI checks could not be rerun: a local browser executable was unavailable, its download endpoint was unavailable, and the cloud browser blocked the local test URL. Browser acceptance tests are included but unexecuted for this release. Physical iOS/Android and Safari/Firefox/Edge were not tested. Use a current browser with Canvas, Web Workers, IndexedDB, and native dialog support. Service-worker offline reload requires a secure context.
 
 ## Repository contents
 
@@ -122,7 +123,29 @@ Tested in Chromium 134 on Linux at desktop, tablet, and phone viewport sizes. Ch
 
 Users do not need to build anything. Maintainers can edit `src/`, then run `python3 build.py` to update `index.html`. Keep `VERSION`, the visible version, and the service-worker version in sync for future releases.
 
-Developer checks use Playwright only; it is not a runtime dependency. See `tests/README.md` for running them. The package includes complete readable source and no minified third-party JavaScript.
+Developer checks use Node, Playwright, and optional native Canvas; none is a runtime dependency. See `tests/README.md` for running them. The package includes complete readable source and no minified third-party JavaScript.
+
+## New v1.4 Magic Eraser
+
+Open **Retouch → Magic Eraser** in Easy or Advanced mode.
+
+1. Paint the entire unwanted object, including its shadow and a small margin around its edges. Adjust the brush radius for precision; zoom and Pan are available as before.
+2. Use **Subtract mask** to remove accidentally painted areas. **Undo mask stroke** and **Clear mask** modify the selection without changing the photo. The pink overlay marks the removal area.
+3. Choose **Erase object**. A local worker searches unpainted surroundings for matching patches and reconstructs the selected background. **Cancel removal** stops processing and leaves the mask available.
+4. Inspect the proposed fill. **Keep result** commits it; **Try another fill** changes the candidate search; **Back to mask** discards the proposal and lets you paint or subtract more.
+5. Use ordinary Undo/Redo after keeping a result. **Refine last kept removal** restores its mask and returns to the photo before that removal. **Remove last kept removal** removes it without a mask. Both actions are undoable.
+
+**Fine-tune removal:** Surroundings controls how far beyond the selection to search; Texture patch radius controls the texture footprint used for matching. Increase Surroundings if there is not enough clean background nearby. An automatic fill never samples painted pixels as donors. No source-point picking, uploads, server, account, downloaded model, or API key is required.
+
+**Recovery:** Mask strokes are autosaved, undoable, and included in project JSON. Kept results are PNG patches referenced by the current project and named snapshots. The original remains intact. An unkept preview is temporary; switching tools or making another edit discards that proposal while retaining the mask. Keep the result before exporting. Edits → Magic Eraser bypasses all kept removals without erasing them. Named snapshots retain their own removal patches, even after the current session is reset. Looks and recipes preserve existing spatial removals; recipes do not transfer removals to a different photograph.
+
+**Limits:** This reconstructs a plausible background from existing pixels, not the true hidden scene. It works best on repeating textures, walls, sky, foliage, and similar backgrounds. Large objects covering unique structures, text, faces, or intersecting lines can produce repeated patterns, seams, or incorrect geometry. Paint a complete silhouette plus a margin; a partially covered object can leave a remnant. Remove separate objects one at a time. Retry, refine, or switch to Clone brush for manual cleanup.
+
+Analysis uses a surrounding region reduced to at most 720 pixels on its longest side, then reconstructs the result from native-resolution source samples. The photograph's dimensions do not change. Very fine unique texture can differ inside the repaired area. Each project supports 32 kept removals, 60 strokes per draft mask, and 1,200 points per stroke; existing file/working-image and portable project size limits still apply. Transparent pixels remain transparent and cannot supply opaque texture. Removals apply before clone strokes, second exposure, color/effect processing, and geometry; they do not remove text, frames, expanded canvas fill, or objects that exist only in a second exposure.
+
+![Actual app fill on a synthetic object added to the public-domain sample](docs/magic-eraser-example.png)
+
+The comparison above was generated by the actual application pipeline on the bundled sample with an added test object; it is not a browser screenshot or a claim that arbitrary objects always remove seamlessly.
 
 ## New v1.3 creative filters
 
@@ -156,10 +179,10 @@ Dehaze is a bounded, dark-channel-inspired approximation with box-smoothed trans
 
 **Edits/snapshots:** Edits bypasses groups while retaining their parameters. Processing order is fixed; the inspector does not reorder filters. A named snapshot freezes the full edit settings and retains its second-image reference. Compare shows that snapshot's complete composition, which may have a different crop or size; Original Tones uses the current geometry for alignment. Restoring a snapshot is undoable. Deleting a snapshot is confirmed and leaves the current edit intact. History is session-only; named snapshots persist in project JSON and autosave.
 
-**Updating an installation:** Download a project backup, close old editor tabs, replace both `index.html` and `sw.js`, and reopen the editor. Existing schema-1 and schema-2 autosaves are migrated on load. All copies on the same origin share one active project, so avoid editing the same session in multiple tabs.
+**Updating an installation:** Download a project backup, close old editor tabs, replace both `index.html` and `sw.js`, and reopen the editor. Existing schema-1, schema-2, and schema-3 autosaves are migrated on load. All copies on the same origin share one active project, so avoid editing the same session in multiple tabs.
 
 ## License and next steps
 
 Copyright © 2026 Michael Parks / Green Shoe Garage. GNU GPL v3 only. The sample photograph is separately public domain. See `LICENSE` and `THIRD-PARTY-NOTICES.md`.
 
-Creative filters are implemented in v1.3. Batch workflows and export-queue refinement remain future work. See `docs/ROADMAP.md`. RAW/HEIC decoding, automatic subject masking, and content-aware healing require separate evaluation; this release does not claim those features.
+Magic Eraser is implemented in v1.4 with local exemplar-based inpainting. Batch workflows and export-queue refinement remain future work. See `docs/ROADMAP.md`. RAW/HEIC decoding, automatic subject masking, and semantic/generative reconstruction are not included.
